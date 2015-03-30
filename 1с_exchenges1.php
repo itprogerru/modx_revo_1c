@@ -1,10 +1,12 @@
-<?php
-// Папка для хранения временных файлов синхронизации
+п»ї<?php 
+
+12
+// РџР°РїРєР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
 $dir = 'simpla/cml/temp/';
-// Обновлять все данные при каждой синхронизации
+// РћР±РЅРѕРІР»СЏС‚СЊ РІСЃРµ РґР°РЅРЅС‹Рµ РїСЂРё РєР°Р¶РґРѕР№ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
 $full_update = true;
-// Название параметра товара, используемого как бренд
-$brand_option_name = 'Производитель';
+// РќР°Р·РІР°РЅРёРµ РїР°СЂР°РјРµС‚СЂР° С‚РѕРІР°СЂР°, РёСЃРїРѕР»СЊР·СѓРµРјРѕРіРѕ РєР°Рє Р±СЂРµРЅРґ
+$brand_option_name = 'РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ';
 $start_time = microtime(true);
 $max_exec_time = min(30, @ini_get("max_execution_time"));
 if(empty($max_exec_time))
@@ -39,23 +41,23 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 	fwrite($f, file_get_contents('php://input'));
 	fclose($f);
 	$xml = simplexml_load_file($dir.$filename);	
-	foreach($xml->Документ as $xml_order)
+	foreach($xml->Р”РѕРєСѓРјРµРЅС‚ as $xml_order)
 	{
 		$order = new stdClass;
-		$order->id = $xml_order->Номер;
+		$order->id = $xml_order->РќРѕРјРµСЂ;
 		$existed_order = $simpla->orders->get_order(intval($order->id));
 		
-		$order->date = $xml_order->Дата.' '.$xml_order->Время;
-		$order->name = $xml_order->Контрагенты->Контрагент->Наименование;
-		if(isset($xml_order->ЗначенияРеквизитов->ЗначениеРеквизита))
-		foreach($xml_order->ЗначенияРеквизитов->ЗначениеРеквизита as $r)
+		$order->date = $xml_order->Р”Р°С‚Р°.' '.$xml_order->Р’СЂРµРјСЏ;
+		$order->name = $xml_order->РљРѕРЅС‚СЂР°РіРµРЅС‚С‹->РљРѕРЅС‚СЂР°РіРµРЅС‚->РќР°РёРјРµРЅРѕРІР°РЅРёРµ;
+		if(isset($xml_order->Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ->Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°))
+		foreach($xml_order->Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ->Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р° as $r)
 		{
-			switch ($r->Наименование) {
-		    case 'Проведен':
-		    	$proveden = ($r->Значение == 'true');
+			switch ($r->РќР°РёРјРµРЅРѕРІР°РЅРёРµ) {
+		    case 'РџСЂРѕРІРµРґРµРЅ':
+		    	$proveden = ($r->Р—РЅР°С‡РµРЅРёРµ == 'true');
 		        break;
-		    case 'ПометкаУдаления':
-		    	$udalen = ($r->Значение == 'true');
+		    case 'РџРѕРјРµС‚РєР°РЈРґР°Р»РµРЅРёСЏ':
+		    	$udalen = ($r->Р—РЅР°С‡РµРЅРёРµ == 'true');
 		        break;
 			}
 		}
@@ -77,19 +79,19 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 		}
 		
 		$purchases_ids = array();
-		// Товары
-		foreach($xml_order->Товары->Товар as $xml_product)
+		// РўРѕРІР°СЂС‹
+		foreach($xml_order->РўРѕРІР°СЂС‹->РўРѕРІР°СЂ as $xml_product)
 		{
 			$purchase = null;
-			//  Id товара и варианта (если есть) по 1С
+			//  Id С‚РѕРІР°СЂР° Рё РІР°СЂРёР°РЅС‚Р° (РµСЃР»Рё РµСЃС‚СЊ) РїРѕ 1РЎ
 			$product_1c_id = $variant_1c_id = '';
-			@list($product_1c_id, $variant_1c_id) = explode('#', $xml_product->Ид);
+			@list($product_1c_id, $variant_1c_id) = explode('#', $xml_product->РРґ);
 			if(empty($product_1c_id))
 				$product_1c_id = '';
 			if(empty($variant_1c_id))
 				$variant_1c_id = '';
 				
-			// Ищем товар
+			// РС‰РµРј С‚РѕРІР°СЂ
 			$simpla->db->query('SELECT id FROM __products WHERE external_id=?', $product_1c_id);
 			$product_id = $simpla->db->result('id');
 			$simpla->db->query('SELECT id FROM __variants WHERE external_id=? AND product_id=?', $variant_1c_id, $product_id);
@@ -100,14 +102,14 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 			$purchase->product_id = $product_id;
 			$purchase->variant_id = $variant_id;
 			
-			$purchase->sku = $xml_product->Артикул;			
-			$purchase->product_name = $xml_product->Наименование;
-			$purchase->amount = $xml_product->Количество;
-			$purchase->price = floatval($xml_product->ЦенаЗаЕдиницу);
+			$purchase->sku = $xml_product->РђСЂС‚РёРєСѓР»;			
+			$purchase->product_name = $xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ;
+			$purchase->amount = $xml_product->РљРѕР»РёС‡РµСЃС‚РІРѕ;
+			$purchase->price = floatval($xml_product->Р¦РµРЅР°Р—Р°Р•РґРёРЅРёС†Сѓ);
 			
-			if(isset($xml_product->Скидки->Скидка))
+			if(isset($xml_product->РЎРєРёРґРєРё->РЎРєРёРґРєР°))
 			{
-				$discount = $xml_product->Скидки->Скидка->Процент;
+				$discount = $xml_product->РЎРєРёРґРєРё->РЎРєРёРґРєР°->РџСЂРѕС†РµРЅС‚;
 				$purchase->price = $purchase->price*(100-$discount)/100;
 			}
 			
@@ -119,14 +121,14 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 				$purchase_id = $simpla->orders->add_purchase($purchase);
 			$purchases_ids[] = $purchase_id;
 		}
-		// Удалим покупки, которых нет в файле
+		// РЈРґР°Р»РёРј РїРѕРєСѓРїРєРё, РєРѕС‚РѕСЂС‹С… РЅРµС‚ РІ С„Р°Р№Р»Рµ
 		foreach($simpla->orders->get_purchases(array('order_id'=>intval($order->id))) as $purchase)
 		{
 			if(!in_array($purchase->id, $purchases_ids))
 				$simpla->orders->delete_purchase($purchase->id);
 		}
 		
-		$simpla->db->query('UPDATE __orders SET discount=0, total_price=? WHERE id=? LIMIT 1', $xml_order->Сумма, $order->id);
+		$simpla->db->query('UPDATE __orders SET discount=0, total_price=? WHERE id=? LIMIT 1', $xml_order->РЎСѓРјРјР°, $order->id);
 		
 	}
 	
@@ -136,50 +138,50 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == 'query')
 {
 		$no_spaces = '<?xml version="1.0" encoding="utf-8"?>
-							<КоммерческаяИнформация ВерсияСхемы="2.04" ДатаФормирования="' . date ( 'Y-m-d' )  . '"></КоммерческаяИнформация>';
+							<РљРѕРјРјРµСЂС‡РµСЃРєР°СЏРРЅС„РѕСЂРјР°С†РёСЏ Р’РµСЂСЃРёСЏРЎС…РµРјС‹="2.04" Р”Р°С‚Р°Р¤РѕСЂРјРёСЂРѕРІР°РЅРёСЏ="' . date ( 'Y-m-d' )  . '"></РљРѕРјРјРµСЂС‡РµСЃРєР°СЏРРЅС„РѕСЂРјР°С†РёСЏ>';
 		$xml = new SimpleXMLElement ( $no_spaces );
 		$orders = $simpla->orders->get_orders(array('modified_since'=>$simpla->settings->last_1c_orders_export_date));
 		foreach($orders as $order)
 		{
 			$date = new DateTime($order->date);
 			
-			$doc = $xml->addChild ("Документ");
-			$doc->addChild ( "Ид", $order->id);
-			$doc->addChild ( "Номер", $order->id);
-			$doc->addChild ( "Дата", $date->format('Y-m-d'));
-			$doc->addChild ( "ХозОперация", "Заказ товара" );
-			$doc->addChild ( "Роль", "Продавец" );
-			$doc->addChild ( "Курс", "1" );
-			$doc->addChild ( "Сумма", $order->total_price);
-			$doc->addChild ( "Время",  $date->format('H:i:s'));
-			$doc->addChild ( "Комментарий", $order->comment);
+			$doc = $xml->addChild ("Р”РѕРєСѓРјРµРЅС‚");
+			$doc->addChild ( "РРґ", $order->id);
+			$doc->addChild ( "РќРѕРјРµСЂ", $order->id);
+			$doc->addChild ( "Р”Р°С‚Р°", $date->format('Y-m-d'));
+			$doc->addChild ( "РҐРѕР·РћРїРµСЂР°С†РёСЏ", "Р—Р°РєР°Р· С‚РѕРІР°СЂР°" );
+			$doc->addChild ( "Р РѕР»СЊ", "РџСЂРѕРґР°РІРµС†" );
+			$doc->addChild ( "РљСѓСЂСЃ", "1" );
+			$doc->addChild ( "РЎСѓРјРјР°", $order->total_price);
+			$doc->addChild ( "Р’СЂРµРјСЏ",  $date->format('H:i:s'));
+			$doc->addChild ( "РљРѕРјРјРµРЅС‚Р°СЂРёР№", $order->comment);
 			
-			// Контрагенты
-			$k1 = $doc->addChild ( 'Контрагенты' );
-			$k1_1 = $k1->addChild ( 'Контрагент' );
-			$k1_2 = $k1_1->addChild ( "Ид", $order->name);
-			$k1_2 = $k1_1->addChild ( "Наименование", $order->name);
-			$k1_2 = $k1_1->addChild ( "Роль", "Покупатель" );
-			$k1_2 = $k1_1->addChild ( "ПолноеНаименование", $order->name );
+			// РљРѕРЅС‚СЂР°РіРµРЅС‚С‹
+			$k1 = $doc->addChild ( 'РљРѕРЅС‚СЂР°РіРµРЅС‚С‹' );
+			$k1_1 = $k1->addChild ( 'РљРѕРЅС‚СЂР°РіРµРЅС‚' );
+			$k1_2 = $k1_1->addChild ( "РРґ", $order->name);
+			$k1_2 = $k1_1->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", $order->name);
+			$k1_2 = $k1_1->addChild ( "Р РѕР»СЊ", "РџРѕРєСѓРїР°С‚РµР»СЊ" );
+			$k1_2 = $k1_1->addChild ( "РџРѕР»РЅРѕРµРќР°РёРјРµРЅРѕРІР°РЅРёРµ", $order->name );
 			
-			// Доп параметры
-			$addr = $k1_1->addChild ('АдресРегистрации');
-			$addr->addChild ( 'Представление', $order->address );
-			$addrField = $addr->addChild ( 'АдресноеПоле' );
-			$addrField->addChild ( 'Тип', 'Страна' );
-			$addrField->addChild ( 'Значение', 'RU' );
-			$addrField = $addr->addChild ( 'АдресноеПоле' );
-			$addrField->addChild ( 'Тип', 'Регион' );
-			$addrField->addChild ( 'Значение', $order->address );
-			$contacts = $k1_1->addChild ( 'Контакты' );
-			$cont = $contacts->addChild ( 'Контакт' );
-			$cont->addChild ( 'Тип', 'Телефон' );
-			$cont->addChild ( 'Значение', $order->phone );
-			$cont = $contacts->addChild ( 'Контакт' );
-			$cont->addChild ( 'Тип', 'Почта' );
-			$cont->addChild ( 'Значение', $order->email );
+			// Р”РѕРї РїР°СЂР°РјРµС‚СЂС‹
+			$addr = $k1_1->addChild ('РђРґСЂРµСЃР РµРіРёСЃС‚СЂР°С†РёРё');
+			$addr->addChild ( 'РџСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ', $order->address );
+			$addrField = $addr->addChild ( 'РђРґСЂРµСЃРЅРѕРµРџРѕР»Рµ' );
+			$addrField->addChild ( 'РўРёРї', 'РЎС‚СЂР°РЅР°' );
+			$addrField->addChild ( 'Р—РЅР°С‡РµРЅРёРµ', 'RU' );
+			$addrField = $addr->addChild ( 'РђРґСЂРµСЃРЅРѕРµРџРѕР»Рµ' );
+			$addrField->addChild ( 'РўРёРї', 'Р РµРіРёРѕРЅ' );
+			$addrField->addChild ( 'Р—РЅР°С‡РµРЅРёРµ', $order->address );
+			$contacts = $k1_1->addChild ( 'РљРѕРЅС‚Р°РєС‚С‹' );
+			$cont = $contacts->addChild ( 'РљРѕРЅС‚Р°РєС‚' );
+			$cont->addChild ( 'РўРёРї', 'РўРµР»РµС„РѕРЅ' );
+			$cont->addChild ( 'Р—РЅР°С‡РµРЅРёРµ', $order->phone );
+			$cont = $contacts->addChild ( 'РљРѕРЅС‚Р°РєС‚' );
+			$cont->addChild ( 'РўРёРї', 'РџРѕС‡С‚Р°' );
+			$cont->addChild ( 'Р—РЅР°С‡РµРЅРёРµ', $order->email );
 			$purchases = $simpla->orders->get_purchases(array('order_id'=>intval($order->id)));
-			$t1 = $doc->addChild ( 'Товары' );
+			$t1 = $doc->addChild ( 'РўРѕРІР°СЂС‹' );
 			foreach($purchases as $purchase)
 			{
 				if(!empty($purchase->product_id) && !empty($purchase->variant_id))
@@ -189,7 +191,7 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 					$simpla->db->query('SELECT external_id FROM __variants WHERE id=?', $purchase->variant_id);
 					$id_v = $simpla->db->result('external_id');
 					
-					// Если нет внешнего ключа товара - указываем наш id
+					// Р•СЃР»Рё РЅРµС‚ РІРЅРµС€РЅРµРіРѕ РєР»СЋС‡Р° С‚РѕРІР°СЂР° - СѓРєР°Р·С‹РІР°РµРј РЅР°С€ id
 					if(!empty($id_p))
 					{
 						$id = $id_p;
@@ -200,7 +202,7 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 						$id = $purchase->product_id;
 					}
 					
-					// Если нет внешнего ключа варианта - указываем наш id
+					// Р•СЃР»Рё РЅРµС‚ РІРЅРµС€РЅРµРіРѕ РєР»СЋС‡Р° РІР°СЂРёР°РЅС‚Р° - СѓРєР°Р·С‹РІР°РµРј РЅР°С€ id
 					if(!empty($id_v))
 					{
 						$id = $id.'#'.$id_v;
@@ -211,81 +213,81 @@ if($simpla->request->get('type') == 'sale' && $simpla->request->get('mode') == '
 						$id = $id.'#'.$purchase->variant_id;
 					}
 						
-					$t1_1 = $t1->addChild ( 'Товар' );
+					$t1_1 = $t1->addChild ( 'РўРѕРІР°СЂ' );
 					
 					if($id)
-						$t1_2 = $t1_1->addChild ( "Ид", $id);
+						$t1_2 = $t1_1->addChild ( "РРґ", $id);
 					
-					$t1_2 = $t1_1->addChild ( "Артикул", $purchase->sku);
+					$t1_2 = $t1_1->addChild ( "РђСЂС‚РёРєСѓР»", $purchase->sku);
 					
 					$name = $purchase->product_name;
 					if($purchase->variant_name)
 						$name .= " $purchase->variant_name $id";
-					$t1_2 = $t1_1->addChild ( "Наименование", $name);
-					$t1_2 = $t1_1->addChild ( "ЦенаЗаЕдиницу", $purchase->price*(100-$order->discount)/100);
-					$t1_2 = $t1_1->addChild ( "Количество", $purchase->amount );
-					$t1_2 = $t1_1->addChild ( "Сумма", $purchase->amount*$purchase->price*(100-$order->discount)/100);
+					$t1_2 = $t1_1->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", $name);
+					$t1_2 = $t1_1->addChild ( "Р¦РµРЅР°Р—Р°Р•РґРёРЅРёС†Сѓ", $purchase->price*(100-$order->discount)/100);
+					$t1_2 = $t1_1->addChild ( "РљРѕР»РёС‡РµСЃС‚РІРѕ", $purchase->amount );
+					$t1_2 = $t1_1->addChild ( "РЎСѓРјРјР°", $purchase->amount*$purchase->price*(100-$order->discount)/100);
 					
 					/*
-					$t1_2 = $t1_1->addChild ( "Скидки" );
-					$t1_3 = $t1_2->addChild ( "Скидка" );
-					$t1_4 = $t1_3->addChild ( "Сумма", $purchase->amount*$purchase->price*(100-$order->discount)/100);
-					$t1_4 = $t1_3->addChild ( "УчтеноВСумме", "true" );
+					$t1_2 = $t1_1->addChild ( "РЎРєРёРґРєРё" );
+					$t1_3 = $t1_2->addChild ( "РЎРєРёРґРєР°" );
+					$t1_4 = $t1_3->addChild ( "РЎСѓРјРјР°", $purchase->amount*$purchase->price*(100-$order->discount)/100);
+					$t1_4 = $t1_3->addChild ( "РЈС‡С‚РµРЅРѕР’РЎСѓРјРјРµ", "true" );
 					*/
 					
-					$t1_2 = $t1_1->addChild ( "ЗначенияРеквизитов" );
-					$t1_3 = $t1_2->addChild ( "ЗначениеРеквизита" );
-					$t1_4 = $t1_3->addChild ( "Наименование", "ВидНоменклатуры" );
-					$t1_4 = $t1_3->addChild ( "Значение", "Товар" );
+					$t1_2 = $t1_1->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+					$t1_3 = $t1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+					$t1_4 = $t1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "Р’РёРґРќРѕРјРµРЅРєР»Р°С‚СѓСЂС‹" );
+					$t1_4 = $t1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "РўРѕРІР°СЂ" );
 	
-					$t1_2 = $t1_1->addChild ( "ЗначенияРеквизитов" );
-					$t1_3 = $t1_2->addChild ( "ЗначениеРеквизита" );
-					$t1_4 = $t1_3->addChild ( "Наименование", "ТипНоменклатуры" );
-					$t1_4 = $t1_3->addChild ( "Значение", "Товар" );
+					$t1_2 = $t1_1->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+					$t1_3 = $t1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+					$t1_4 = $t1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РўРёРїРќРѕРјРµРЅРєР»Р°С‚СѓСЂС‹" );
+					$t1_4 = $t1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "РўРѕРІР°СЂ" );
 				}
 			}
 			
-			// Доставка
+			// Р”РѕСЃС‚Р°РІРєР°
 			if($order->delivery_price>0 && !$order->separate_delivery)
 			{
-				$t1 = $t1->addChild ( 'Товар' );
-				$t1->addChild ( "Ид", 'ORDER_DELIVERY');
-				$t1->addChild ( "Наименование", 'Доставка');
-				$t1->addChild ( "ЦенаЗаЕдиницу", $order->delivery_price);
-				$t1->addChild ( "Количество", 1 );
-				$t1->addChild ( "Сумма", $order->delivery_price);
-				$t1_2 = $t1->addChild ( "ЗначенияРеквизитов" );
-				$t1_3 = $t1_2->addChild ( "ЗначениеРеквизита" );
-				$t1_4 = $t1_3->addChild ( "Наименование", "ВидНоменклатуры" );
-				$t1_4 = $t1_3->addChild ( "Значение", "Услуга" );
-				$t1_2 = $t1->addChild ( "ЗначенияРеквизитов" );
-				$t1_3 = $t1_2->addChild ( "ЗначениеРеквизита" );
-				$t1_4 = $t1_3->addChild ( "Наименование", "ТипНоменклатуры" );
-				$t1_4 = $t1_3->addChild ( "Значение", "Услуга" );
+				$t1 = $t1->addChild ( 'РўРѕРІР°СЂ' );
+				$t1->addChild ( "РРґ", 'ORDER_DELIVERY');
+				$t1->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", 'Р”РѕСЃС‚Р°РІРєР°');
+				$t1->addChild ( "Р¦РµРЅР°Р—Р°Р•РґРёРЅРёС†Сѓ", $order->delivery_price);
+				$t1->addChild ( "РљРѕР»РёС‡РµСЃС‚РІРѕ", 1 );
+				$t1->addChild ( "РЎСѓРјРјР°", $order->delivery_price);
+				$t1_2 = $t1->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+				$t1_3 = $t1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+				$t1_4 = $t1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "Р’РёРґРќРѕРјРµРЅРєР»Р°С‚СѓСЂС‹" );
+				$t1_4 = $t1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "РЈСЃР»СѓРіР°" );
+				$t1_2 = $t1->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+				$t1_3 = $t1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+				$t1_4 = $t1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РўРёРїРќРѕРјРµРЅРєР»Р°С‚СѓСЂС‹" );
+				$t1_4 = $t1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "РЈСЃР»СѓРіР°" );
 				
 			}
 			
-			// Статус			
+			// РЎС‚Р°С‚СѓСЃ			
 			if($order->status == 1)
 			{
-				$s1_2 = $doc->addChild ( "ЗначенияРеквизитов" );
-				$s1_3 = $s1_2->addChild ( "ЗначениеРеквизита" );
-				$s1_3->addChild ( "Наименование", "Статус заказа" );
-				$s1_3->addChild ( "Значение", "[N] Принят" );
+				$s1_2 = $doc->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+				$s1_3 = $s1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+				$s1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РЎС‚Р°С‚СѓСЃ Р·Р°РєР°Р·Р°" );
+				$s1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "[N] РџСЂРёРЅСЏС‚" );
 			}
 			if($order->status == 2)
 			{
-				$s1_2 = $doc->addChild ( "ЗначенияРеквизитов" );
-				$s1_3 = $s1_2->addChild ( "ЗначениеРеквизита" );
-				$s1_3->addChild ( "Наименование", "Статус заказа" );
-				$s1_3->addChild ( "Значение", "[F] Доставлен" );
+				$s1_2 = $doc->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+				$s1_3 = $s1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+				$s1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РЎС‚Р°С‚СѓСЃ Р·Р°РєР°Р·Р°" );
+				$s1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "[F] Р”РѕСЃС‚Р°РІР»РµРЅ" );
 			}
 			if($order->status == 3)
 			{
-				$s1_2 = $doc->addChild ( "ЗначенияРеквизитов" );
-				$s1_3 = $s1_2->addChild ( "ЗначениеРеквизита" );
-				$s1_3->addChild ( "Наименование", "Отменен" );
-				$s1_3->addChild ( "Значение", "true" );
+				$s1_2 = $doc->addChild ( "Р—РЅР°С‡РµРЅРёСЏР РµРєРІРёР·РёС‚РѕРІ" );
+				$s1_3 = $s1_2->addChild ( "Р—РЅР°С‡РµРЅРёРµР РµРєРІРёР·РёС‚Р°" );
+				$s1_3->addChild ( "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РћС‚РјРµРЅРµРЅ" );
+				$s1_3->addChild ( "Р—РЅР°С‡РµРЅРёРµ", "true" );
 			}			
 		}
 		header ( "Content-type: text/xml; charset=utf-8" );
@@ -334,37 +336,37 @@ if($simpla->request->get('type') == 'catalog' && $simpla->request->get('mode') =
 	
 	if($filename === 'import.xml')
 	{
-		// Категории и свойства (только в первом запросе пакетной передачи)
+		// РљР°С‚РµРіРѕСЂРёРё Рё СЃРІРѕР№СЃС‚РІР° (С‚РѕР»СЊРєРѕ РІ РїРµСЂРІРѕРј Р·Р°РїСЂРѕСЃРµ РїР°РєРµС‚РЅРѕР№ РїРµСЂРµРґР°С‡Рё)
 		if(!isset($_SESSION['last_1c_imported_product_num']))
 		{
 			$z = new XMLReader;
 			$z->open($dir.$filename);		
-			while ($z->read() && $z->name !== 'Классификатор');
+			while ($z->read() && $z->name !== 'РљР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂ');
 			$xml = new SimpleXMLElement($z->readOuterXML());
 			$z->close();
 			import_categories($xml);
 			import_features($xml);
 		}
 		
-		// Товары 			
+		// РўРѕРІР°СЂС‹ 			
 		$z = new XMLReader;
 		$z->open($dir.$filename);
 		
-		while ($z->read() && $z->name !== 'Товар');
+		while ($z->read() && $z->name !== 'РўРѕРІР°СЂ');
 		
-		// Последний товар, на котором остановились
+		// РџРѕСЃР»РµРґРЅРёР№ С‚РѕРІР°СЂ, РЅР° РєРѕС‚РѕСЂРѕРј РѕСЃС‚Р°РЅРѕРІРёР»РёСЃСЊ
 		$last_product_num = 0;
 		if(isset($_SESSION['last_1c_imported_product_num']))
 			$last_product_num = $_SESSION['last_1c_imported_product_num'];
 		
-		// Номер текущего товара
+		// РќРѕРјРµСЂ С‚РµРєСѓС‰РµРіРѕ С‚РѕРІР°СЂР°
 		$current_product_num = 0;
-		while($z->name === 'Товар')
+		while($z->name === 'РўРѕРІР°СЂ')
 		{
 			if($current_product_num >= $last_product_num)
 			{
 				$xml = new SimpleXMLElement($z->readOuterXML());
-				// Товары
+				// РўРѕРІР°СЂС‹
 				import_product($xml);
 				
 				$exec_time = microtime(true) - $start_time;
@@ -373,12 +375,12 @@ if($simpla->request->get('type') == 'catalog' && $simpla->request->get('mode') =
 					header ( "Content-type: text/xml; charset=utf-8" );
 					print "\xEF\xBB\xBF";
 					print "progress\r\n";
-					print "Выгружено товаров: $current_product_num\r\n";
+					print "Р’С‹РіСЂСѓР¶РµРЅРѕ С‚РѕРІР°СЂРѕРІ: $current_product_num\r\n";
 					$_SESSION['last_1c_imported_product_num'] = $current_product_num;
 					exit();
 				}
 			}
-			$z->next('Товар');
+			$z->next('РўРѕРІР°СЂ');
 			$current_product_num ++;
 		}
 		$z->close();
@@ -388,25 +390,25 @@ if($simpla->request->get('type') == 'catalog' && $simpla->request->get('mode') =
 	}
 	elseif($filename === 'offers.xml')
 	{
-		// Варианты			
+		// Р’Р°СЂРёР°РЅС‚С‹			
 		$z = new XMLReader;
 		$z->open($dir.$filename);
 		
-		while ($z->read() && $z->name !== 'Предложение');
+		while ($z->read() && $z->name !== 'РџСЂРµРґР»РѕР¶РµРЅРёРµ');
 		
-		// Последний вариант, на котором остановились
+		// РџРѕСЃР»РµРґРЅРёР№ РІР°СЂРёР°РЅС‚, РЅР° РєРѕС‚РѕСЂРѕРј РѕСЃС‚Р°РЅРѕРІРёР»РёСЃСЊ
 		$last_variant_num = 0;
 		if(isset($_SESSION['last_1c_imported_variant_num']))
 			$last_variant_num = $_SESSION['last_1c_imported_variant_num'];
 		
-		// Номер текущего товара
+		// РќРѕРјРµСЂ С‚РµРєСѓС‰РµРіРѕ С‚РѕРІР°СЂР°
 		$current_variant_num = 0;
-		while($z->name === 'Предложение')
+		while($z->name === 'РџСЂРµРґР»РѕР¶РµРЅРёРµ')
 		{
 			if($current_variant_num >= $last_variant_num)
 			{
 				$xml = new SimpleXMLElement($z->readOuterXML());
-				// Варианты
+				// Р’Р°СЂРёР°РЅС‚С‹
 				import_variant($xml);
 				
 				$exec_time = microtime(true) - $start_time;
@@ -415,12 +417,12 @@ if($simpla->request->get('type') == 'catalog' && $simpla->request->get('mode') =
 					header ( "Content-type: text/xml; charset=utf-8" );
 					print "\xEF\xBB\xBF";
 					print "progress\r\n";
-					print "Выгружено ценовых предложений: $current_variant_num\r\n";
+					print "Р’С‹РіСЂСѓР¶РµРЅРѕ С†РµРЅРѕРІС‹С… РїСЂРµРґР»РѕР¶РµРЅРёР№: $current_variant_num\r\n";
 					$_SESSION['last_1c_imported_variant_num'] = $current_variant_num;
 					exit();
 				}
 			}
-			$z->next('Предложение');
+			$z->next('РџСЂРµРґР»РѕР¶РµРЅРёРµ');
 			$current_variant_num ++;
 		}
 		$z->close();
@@ -433,14 +435,14 @@ function import_categories($xml, $parent_id = 0)
 {
 	global $simpla;
 	global $dir;
-	if(isset($xml->Группы->Группа))
-	foreach ($xml->Группы->Группа as $xml_group)
+	if(isset($xml->Р“СЂСѓРїРїС‹->Р“СЂСѓРїРїР°))
+	foreach ($xml->Р“СЂСѓРїРїС‹->Р“СЂСѓРїРїР° as $xml_group)
 	{
-		$simpla->db->query('SELECT id FROM __categories WHERE external_id=?', $xml_group->Ид);
+		$simpla->db->query('SELECT id FROM __categories WHERE external_id=?', $xml_group->РРґ);
 		$category_id = $simpla->db->result('id');
 		if(empty($category_id))
-			$category_id = $simpla->categories->add_category(array('parent_id'=>$parent_id, 'external_id'=>$xml_group->Ид, 'url'=>translit($xml_group->Наименование), 'name'=>$xml_group->Наименование, 'meta_title'=>$xml_group->Наименование, 'meta_keywords'=>$xml_group->Наименование, 'meta_description'=>$xml_group->Наименование ));
-		$_SESSION['categories_mapping'][strval($xml_group->Ид)] = $category_id;
+			$category_id = $simpla->categories->add_category(array('parent_id'=>$parent_id, 'external_id'=>$xml_group->РРґ, 'url'=>translit($xml_group->РќР°РёРјРµРЅРѕРІР°РЅРёРµ), 'name'=>$xml_group->РќР°РёРјРµРЅРѕРІР°РЅРёРµ, 'meta_title'=>$xml_group->РќР°РёРјРµРЅРѕРІР°РЅРёРµ, 'meta_keywords'=>$xml_group->РќР°РёРјРµРЅРѕРІР°РЅРёРµ, 'meta_description'=>$xml_group->РќР°РёРјРµРЅРѕРІР°РЅРёРµ ));
+		$_SESSION['categories_mapping'][strval($xml_group->РРґ)] = $category_id;
 		import_categories($xml_group, $category_id);
 	}
 }
@@ -451,33 +453,33 @@ function import_features($xml)
 	global $brand_option_name;
 	
 	$property = array();
-	if(isset($xml->Свойства->СвойствоНоменклатуры))
-		$property = $xml->Свойства->СвойствоНоменклатуры;
+	if(isset($xml->РЎРІРѕР№СЃС‚РІР°->РЎРІРѕР№СЃС‚РІРѕРќРѕРјРµРЅРєР»Р°С‚СѓСЂС‹))
+		$property = $xml->РЎРІРѕР№СЃС‚РІР°->РЎРІРѕР№СЃС‚РІРѕРќРѕРјРµРЅРєР»Р°С‚СѓСЂС‹;
 		
-	if(isset($xml->Свойства->Свойство))
-		$property = $xml->Свойства->Свойство;
+	if(isset($xml->РЎРІРѕР№СЃС‚РІР°->РЎРІРѕР№СЃС‚РІРѕ))
+		$property = $xml->РЎРІРѕР№СЃС‚РІР°->РЎРІРѕР№СЃС‚РІРѕ;
 		
 	foreach ($property as $xml_feature)
 	{
-		// Если свойство содержит производителя товаров
-		if($xml_feature->Наименование == $brand_option_name)
+		// Р•СЃР»Рё СЃРІРѕР№СЃС‚РІРѕ СЃРѕРґРµСЂР¶РёС‚ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ С‚РѕРІР°СЂРѕРІ
+		if($xml_feature->РќР°РёРјРµРЅРѕРІР°РЅРёРµ == $brand_option_name)
 		{
-			// Запомним в сессии Ид свойства с производителем
-			$_SESSION['brand_option_id'] = strval($xml_feature->Ид);		
+			// Р—Р°РїРѕРјРЅРёРј РІ СЃРµСЃСЃРёРё РРґ СЃРІРѕР№СЃС‚РІР° СЃ РїСЂРѕРёР·РІРѕРґРёС‚РµР»РµРј
+			$_SESSION['brand_option_id'] = strval($xml_feature->РРґ);		
 		}
-		// Иначе обрабатываем как обычной свойство товара
+		// РРЅР°С‡Рµ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РєР°Рє РѕР±С‹С‡РЅРѕР№ СЃРІРѕР№СЃС‚РІРѕ С‚РѕРІР°СЂР°
 		else
 		{
-			$simpla->db->query('SELECT id FROM __features WHERE name=?', strval($xml_feature->Наименование));
+			$simpla->db->query('SELECT id FROM __features WHERE name=?', strval($xml_feature->РќР°РёРјРµРЅРѕРІР°РЅРёРµ));
 			$feature_id = $simpla->db->result('id');
 			if(empty($feature_id))
-				$feature_id = $simpla->features->add_feature(array('name'=>strval($xml_feature->Наименование)));
-			$_SESSION['features_mapping'][strval($xml_feature->Ид)] = $feature_id;
-			if($xml_feature->ТипЗначений == 'Справочник')
+				$feature_id = $simpla->features->add_feature(array('name'=>strval($xml_feature->РќР°РёРјРµРЅРѕРІР°РЅРёРµ)));
+			$_SESSION['features_mapping'][strval($xml_feature->РРґ)] = $feature_id;
+			if($xml_feature->РўРёРїР—РЅР°С‡РµРЅРёР№ == 'РЎРїСЂР°РІРѕС‡РЅРёРє')
 			{
-				foreach($xml_feature->ВариантыЗначений->Справочник as $val)
+				foreach($xml_feature->Р’Р°СЂРёР°РЅС‚С‹Р—РЅР°С‡РµРЅРёР№->РЎРїСЂР°РІРѕС‡РЅРёРє as $val)
 				{
-					$_SESSION['features_values'][strval($val->ИдЗначения)] = strval($val->Значение);
+					$_SESSION['features_values'][strval($val->РРґР—РЅР°С‡РµРЅРёСЏ)] = strval($val->Р—РЅР°С‡РµРЅРёРµ);
 				}
 			}
 		}
@@ -489,30 +491,30 @@ function import_product($xml_product)
 	global $dir;
 	global $brand_option_name;
 	global $full_update;
-	// Товары
-	//  Id товара и варианта (если есть) по 1С
-	@list($product_1c_id, $variant_1c_id) = explode('#', $xml_product->Ид);
+	// РўРѕРІР°СЂС‹
+	//  Id С‚РѕРІР°СЂР° Рё РІР°СЂРёР°РЅС‚Р° (РµСЃР»Рё РµСЃС‚СЊ) РїРѕ 1РЎ
+	@list($product_1c_id, $variant_1c_id) = explode('#', $xml_product->РРґ);
 	if(empty($variant_1c_id))
 		$variant_1c_id = '';
 	
-	// Ид категории
-	if(isset($xml_product->Группы->Ид))
-	$category_id = $_SESSION['categories_mapping'][strval($xml_product->Группы->Ид)];
+	// РРґ РєР°С‚РµРіРѕСЂРёРё
+	if(isset($xml_product->Р“СЂСѓРїРїС‹->РРґ))
+	$category_id = $_SESSION['categories_mapping'][strval($xml_product->Р“СЂСѓРїРїС‹->РРґ)];
 	
 	
-	// Подгатавливаем вариант
+	// РџРѕРґРіР°С‚Р°РІР»РёРІР°РµРј РІР°СЂРёР°РЅС‚
 	$variant_id = null;
 	$variant = new stdClass;
 	$values = array();
-	if(isset($xml_product->ХарактеристикиТовара->ХарактеристикаТовара))
-	foreach($xml_product->ХарактеристикиТовара->ХарактеристикаТовара as $xml_property)
-		$values[] = $xml_property->Значение;
+	if(isset($xml_product->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєРёРўРѕРІР°СЂР°->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєР°РўРѕРІР°СЂР°))
+	foreach($xml_product->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєРёРўРѕРІР°СЂР°->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєР°РўРѕРІР°СЂР° as $xml_property)
+		$values[] = $xml_property->Р—РЅР°С‡РµРЅРёРµ;
 	if(!empty($values))
 		$variant->name = implode(', ', $values);
-	$variant->sku = (string)$xml_product->Артикул;
+	$variant->sku = (string)$xml_product->РђСЂС‚РёРєСѓР»;
 	$variant->external_id = $variant_1c_id;
 	
-	// Ищем товар
+	// РС‰РµРј С‚РѕРІР°СЂ
 	$simpla->db->query('SELECT id FROM __products WHERE external_id=?', $product_1c_id);
 	$product_id = $simpla->db->result('id');
 	if(empty($product_id) && !empty($variant->sku))
@@ -526,25 +528,25 @@ function import_product($xml_product)
 		}
 	}
 	
-	// Если такого товара не нашлось		
+	// Р•СЃР»Рё С‚Р°РєРѕРіРѕ С‚РѕРІР°СЂР° РЅРµ РЅР°С€Р»РѕСЃСЊ		
 	if(empty($product_id))
 	{
-		// Добавляем товар
+		// Р”РѕР±Р°РІР»СЏРµРј С‚РѕРІР°СЂ
 		$description = '';
-		if(!empty($xml_product->Описание))
-			$description = $xml_product->Описание;
-		$product_id = $simpla->products->add_product(array('external_id'=>$product_1c_id, 'url'=>translit($xml_product->Наименование), 'name'=>$xml_product->Наименование, 'meta_title'=>$xml_product->Наименование, 'meta_keywords'=>$xml_product->Наименование, 'meta_description'=>$xml_product->$description,  'annotation'=>$description, 'body'=>$description));
+		if(!empty($xml_product->РћРїРёСЃР°РЅРёРµ))
+			$description = $xml_product->РћРїРёСЃР°РЅРёРµ;
+		$product_id = $simpla->products->add_product(array('external_id'=>$product_1c_id, 'url'=>translit($xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ), 'name'=>$xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ, 'meta_title'=>$xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ, 'meta_keywords'=>$xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ, 'meta_description'=>$xml_product->$description,  'annotation'=>$description, 'body'=>$description));
 		
-		// Добавляем товар в категории
+		// Р”РѕР±Р°РІР»СЏРµРј С‚РѕРІР°СЂ РІ РєР°С‚РµРіРѕСЂРёРё
 		if(isset($category_id))
 		$simpla->categories->add_product_category($product_id, $category_id);
 	
-		// Добавляем изображение товара
-		if(isset($xml_product->Картинка))
+		// Р”РѕР±Р°РІР»СЏРµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ С‚РѕРІР°СЂР°
+		if(isset($xml_product->РљР°СЂС‚РёРЅРєР°))
 		{
-			foreach($xml_product->Картинка as $img)
+			foreach($xml_product->РљР°СЂС‚РёРЅРєР° as $img)
 			{
-				$image = basename($xml_product->Картинка);
+				$image = basename($xml_product->РљР°СЂС‚РёРЅРєР°);
 				if(!empty($image) && is_file($dir.$image) && is_writable($simpla->config->original_images_dir))
 				{
 					rename($dir.$image, $simpla->config->original_images_dir.$image);
@@ -553,7 +555,7 @@ function import_product($xml_product)
 			}
 		}
 	}
-	//Если нашелся товар
+	//Р•СЃР»Рё РЅР°С€РµР»СЃСЏ С‚РѕРІР°СЂ
 	else
 	{
 		if(empty($variant_id) && !empty($variant_1c_id))
@@ -567,26 +569,26 @@ function import_product($xml_product)
 			$variant_id = $simpla->db->result('id');		
 		}
 		
-		// Обновляем товар
+		// РћР±РЅРѕРІР»СЏРµРј С‚РѕРІР°СЂ
 		if($full_update)
 		{
 			$p = new stdClass();
-			if(!empty($xml_product->Описание))
+			if(!empty($xml_product->РћРїРёСЃР°РЅРёРµ))
 			{
-				$description = strval($xml_product->Описание);
+				$description = strval($xml_product->РћРїРёСЃР°РЅРёРµ);
 				$p->meta_description = $description;
 				$p->meta_description = $description;
 				$p->annotation = $description;
 				$p->body = $description;
 			}
 			$p->external_id = $product_1c_id;
-			$p->url = translit($xml_product->Наименование);
-			$p->name = $xml_product->Наименование;
-			$p->meta_title = $xml_product->Наименование;
-			$p->meta_keywords = $xml_product->Наименование;
+			$p->url = translit($xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ);
+			$p->name = $xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ;
+			$p->meta_title = $xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ;
+			$p->meta_keywords = $xml_product->РќР°РёРјРµРЅРѕРІР°РЅРёРµ;
 			$product_id = $simpla->products->update_product($product_id, $p);
 			
-			// Обновляем категорию товара
+			// РћР±РЅРѕРІР»СЏРµРј РєР°С‚РµРіРѕСЂРёСЋ С‚РѕРІР°СЂР°
 			if(isset($category_id) && !empty($product_id))
 			{
    	    		$query = $simpla->db->placehold('DELETE FROM __products_categories WHERE product_id=?', $product_id);
@@ -596,10 +598,10 @@ function import_product($xml_product)
 			
 		}
 		
-		// Обновляем изображение товара
-		if(isset($xml_product->Картинка))
+		// РћР±РЅРѕРІР»СЏРµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ С‚РѕРІР°СЂР°
+		if(isset($xml_product->РљР°СЂС‚РёРЅРєР°))
 		{
-			foreach($xml_product->Картинка as $img)
+			foreach($xml_product->РљР°СЂС‚РёРЅРєР° as $img)
 			{
 				$image = basename($img);
 				if(!empty($image) && is_file($dir.$image) && is_writable($simpla->config->original_images_dir))
@@ -616,7 +618,7 @@ function import_product($xml_product)
 		
 	}
 	
-	// Если не найден вариант, добавляем вариант один к товару
+	// Р•СЃР»Рё РЅРµ РЅР°Р№РґРµРЅ РІР°СЂРёР°РЅС‚, РґРѕР±Р°РІР»СЏРµРј РІР°СЂРёР°РЅС‚ РѕРґРёРЅ Рє С‚РѕРІР°СЂСѓ
 	if(empty($variant_id))
 	{
 		$variant->product_id = $product_id;
@@ -627,19 +629,19 @@ function import_product($xml_product)
 	{
 		$simpla->variants->update_variant($variant_id, $variant);
 	}
-	// Свойства товара
-	if(isset($xml_product->ЗначенияСвойств->ЗначенияСвойства))
+	// РЎРІРѕР№СЃС‚РІР° С‚РѕРІР°СЂР°
+	if(isset($xml_product->Р—РЅР°С‡РµРЅРёСЏРЎРІРѕР№СЃС‚РІ->Р—РЅР°С‡РµРЅРёСЏРЎРІРѕР№СЃС‚РІР°))
 	{
-		foreach ($xml_product->ЗначенияСвойств->ЗначенияСвойства as $xml_option)
+		foreach ($xml_product->Р—РЅР°С‡РµРЅРёСЏРЎРІРѕР№СЃС‚РІ->Р—РЅР°С‡РµРЅРёСЏРЎРІРѕР№СЃС‚РІР° as $xml_option)
 		{
-			if(isset($_SESSION['features_mapping'][strval($xml_option->Ид)]))
+			if(isset($_SESSION['features_mapping'][strval($xml_option->РРґ)]))
 			{
-				$feature_id = $_SESSION['features_mapping'][strval($xml_option->Ид)];
+				$feature_id = $_SESSION['features_mapping'][strval($xml_option->РРґ)];
 				if(isset($category_id) && !empty($feature_id))
 				{
 					$simpla->features->add_feature_category($feature_id, $category_id);
 					$values = array();
-					foreach($xml_option->Значение as $xml_value)
+					foreach($xml_option->Р—РЅР°С‡РµРЅРёРµ as $xml_value)
 					{
 						if(isset($_SESSION['features_values'][strval($xml_value)]))
 							$values[] = strval($_SESSION['features_values'][strval($xml_value)]);
@@ -649,15 +651,15 @@ function import_product($xml_product)
 					$simpla->features->update_option($product_id, $feature_id, implode(' ,', $values));
 				}
 			}
-			// Если свойство оказалось названием бренда
-			elseif(isset($_SESSION['brand_option_id']) && !empty($xml_option->Значение))
+			// Р•СЃР»Рё СЃРІРѕР№СЃС‚РІРѕ РѕРєР°Р·Р°Р»РѕСЃСЊ РЅР°Р·РІР°РЅРёРµРј Р±СЂРµРЅРґР°
+			elseif(isset($_SESSION['brand_option_id']) && !empty($xml_option->Р—РЅР°С‡РµРЅРёРµ))
 			{
-				$brand_name = strval($xml_option->Значение);
-				// Добавим бренд
-				// Найдем его по имени
+				$brand_name = strval($xml_option->Р—РЅР°С‡РµРЅРёРµ);
+				// Р”РѕР±Р°РІРёРј Р±СЂРµРЅРґ
+				// РќР°Р№РґРµРј РµРіРѕ РїРѕ РёРјРµРЅРё
 				$simpla->db->query('SELECT id FROM __brands WHERE name=?', $brand_name);
 				if(!$brand_id = $simpla->db->result('id'))
-					// Создадим, если не найден
+					// РЎРѕР·РґР°РґРёРј, РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ
 					$brand_id = $simpla->brands->add_brand(array('name'=>$brand_name, 'meta_title'=>$brand_name, 'meta_keywords'=>$brand_name, 'meta_description'=>$brand_name, 'url'=>translit($brand_name)));	
 				if(!empty($brand_id))
 					$simpla->products->update_product($product_id, array('brand_id'=>$brand_id));
@@ -666,8 +668,8 @@ function import_product($xml_product)
 	}
 	
 	
-	// Если нужно - удаляем вариант или весь товар
-	if($xml_product->Статус == 'Удален')
+	// Р•СЃР»Рё РЅСѓР¶РЅРѕ - СѓРґР°Р»СЏРµРј РІР°СЂРёР°РЅС‚ РёР»Рё РІРµСЃСЊ С‚РѕРІР°СЂ
+	if($xml_product->РЎС‚Р°С‚СѓСЃ == 'РЈРґР°Р»РµРЅ')
 	{
 		$simpla->variants->delete_variant($variant_id);
 		$simpla->db->query('SELECT count(id) as variants_num FROM __variants WHERE product_id=?', $product_id);
@@ -680,8 +682,8 @@ function import_variant($xml_variant)
 	global $simpla;
 	global $dir;
 	$variant = new stdClass;
-	//  Id товара и варианта (если есть) по 1С
-	@list($product_1c_id, $variant_1c_id) = explode('#', $xml_variant->Ид);
+	//  Id С‚РѕРІР°СЂР° Рё РІР°СЂРёР°РЅС‚Р° (РµСЃР»Рё РµСЃС‚СЊ) РїРѕ 1РЎ
+	@list($product_1c_id, $variant_1c_id) = explode('#', $xml_variant->РРґ);
 	if(empty($variant_1c_id))
 		$variant_1c_id = '';
 	if(empty($product_1c_id))
@@ -694,38 +696,38 @@ function import_variant($xml_variant)
 	$variant->product_id = $simpla->db->result('id');
 	if(empty($variant->product_id))
 		return false;
-	$variant->price = $xml_variant->Цены->Цена->ЦенаЗаЕдиницу;	
+	$variant->price = $xml_variant->Р¦РµРЅС‹->Р¦РµРЅР°->Р¦РµРЅР°Р—Р°Р•РґРёРЅРёС†Сѓ;	
 	
-	if(isset($xml_variant->ХарактеристикиТовара->ХарактеристикаТовара))
-	foreach($xml_variant->ХарактеристикиТовара->ХарактеристикаТовара as $xml_property)
-		$values[] = $xml_property->Значение;
+	if(isset($xml_variant->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєРёРўРѕРІР°СЂР°->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєР°РўРѕРІР°СЂР°))
+	foreach($xml_variant->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєРёРўРѕРІР°СЂР°->РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєР°РўРѕРІР°СЂР° as $xml_property)
+		$values[] = $xml_property->Р—РЅР°С‡РµРЅРёРµ;
 	if(!empty($values))
 		$variant->name = implode(', ', $values);
-	$sku = (string)$xml_variant->Артикул;
+	$sku = (string)$xml_variant->РђСЂС‚РёРєСѓР»;
 	if(!empty($sku))
 		$variant->sku = $sku;
 	
 	
-	// Конвертируем цену из валюты 1С в базовую валюту магазина
-	if(!empty($xml_variant->Цены->Цена->Валюта))
+	// РљРѕРЅРІРµСЂС‚РёСЂСѓРµРј С†РµРЅСѓ РёР· РІР°Р»СЋС‚С‹ 1РЎ РІ Р±Р°Р·РѕРІСѓСЋ РІР°Р»СЋС‚Сѓ РјР°РіР°Р·РёРЅР°
+	if(!empty($xml_variant->Р¦РµРЅС‹->Р¦РµРЅР°->Р’Р°Р»СЋС‚Р°))
 	{
-		// Ищем валюту по коду
-		$simpla->db->query("SELECT id, rate_from, rate_to FROM __currencies WHERE code like ?", $xml_variant->Цены->Цена->Валюта);
+		// РС‰РµРј РІР°Р»СЋС‚Сѓ РїРѕ РєРѕРґСѓ
+		$simpla->db->query("SELECT id, rate_from, rate_to FROM __currencies WHERE code like ?", $xml_variant->Р¦РµРЅС‹->Р¦РµРЅР°->Р’Р°Р»СЋС‚Р°);
 		$variant_currency = $simpla->db->result();
-		// Если не нашли - ищем по обозначению
+		// Р•СЃР»Рё РЅРµ РЅР°С€Р»Рё - РёС‰РµРј РїРѕ РѕР±РѕР·РЅР°С‡РµРЅРёСЋ
 		if(empty($variant_currency))
 		{
-			$simpla->db->query("SELECT id, rate_from, rate_to FROM __currencies WHERE sign like ?", $xml_variant->Цены->Цена->Валюта);
+			$simpla->db->query("SELECT id, rate_from, rate_to FROM __currencies WHERE sign like ?", $xml_variant->Р¦РµРЅС‹->Р¦РµРЅР°->Р’Р°Р»СЋС‚Р°);
 			$variant_currency = $simpla->db->result();
 		}
-		// Если нашли валюту - конвертируем из нее в базовую
+		// Р•СЃР»Рё РЅР°С€Р»Рё РІР°Р»СЋС‚Сѓ - РєРѕРЅРІРµСЂС‚РёСЂСѓРµРј РёР· РЅРµРµ РІ Р±Р°Р·РѕРІСѓСЋ
 		if($variant_currency && $variant_currency->rate_from>0 && $variant_currency->rate_to>0)
 		{
 			$variant->price = floatval($variant->price)*$variant_currency->rate_to/$variant_currency->rate_from;
 		}	
 	}
 	
-	$variant->stock = $xml_variant->Количество;
+	$variant->stock = $xml_variant->РљРѕР»РёС‡РµСЃС‚РІРѕ;
 	if(empty($variant_id))
 		$simpla->variants->add_variant($variant);
 	else	
@@ -733,11 +735,11 @@ function import_variant($xml_variant)
 }
 function translit($text)
 {
-	$ru = explode('-', "А-а-Б-б-В-в-Ґ-ґ-Г-г-Д-д-Е-е-Ё-ё-Є-є-Ж-ж-З-з-И-и-І-і-Ї-ї-Й-й-К-к-Л-л-М-м-Н-н-О-о-П-п-Р-р-С-с-Т-т-У-у-Ф-ф-Х-х-Ц-ц-Ч-ч-Ш-ш-Щ-щ-Ъ-ъ-Ы-ы-Ь-ь-Э-э-Ю-ю-Я-я"); 
+	$ru = explode('-', "Рђ-Р°-Р‘-Р±-Р’-РІ-Тђ-Т‘-Р“-Рі-Р”-Рґ-Р•-Рµ-РЃ-С‘-Р„-С”-Р–-Р¶-Р—-Р·-Р-Рё-Р†-С–-Р‡-С—-Р™-Р№-Рљ-Рє-Р›-Р»-Рњ-Рј-Рќ-РЅ-Рћ-Рѕ-Рџ-Рї-Р -СЂ-РЎ-СЃ-Рў-С‚-РЈ-Сѓ-Р¤-С„-РҐ-С…-Р¦-С†-Р§-С‡-РЁ-С€-Р©-С‰-РЄ-СЉ-Р«-С‹-Р¬-СЊ-Р­-СЌ-Р®-СЋ-РЇ-СЏ"); 
 	$en = explode('-', "A-a-B-b-V-v-G-g-G-g-D-d-E-e-E-e-E-e-ZH-zh-Z-z-I-i-I-i-I-i-J-j-K-k-L-l-M-m-N-n-O-o-P-p-R-r-S-s-T-t-U-u-F-f-H-h-TS-ts-CH-ch-SH-sh-SCH-sch---Y-y---E-e-YU-yu-YA-ya");
  	$res = str_replace($ru, $en, $text);
 	$res = preg_replace("/[\s]+/ui", '-', $res);
-	$res = strtolower(preg_replace("/[^0-9a-zа-я\-]+/ui", '', $res));
+	$res = strtolower(preg_replace("/[^0-9a-zР°-СЏ\-]+/ui", '', $res));
  	
     return $res;  
 }
